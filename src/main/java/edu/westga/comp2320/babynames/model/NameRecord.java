@@ -1,11 +1,23 @@
 package edu.westga.comp2320.babynames.model;
 
+/**
+ * Represents a single baby name record with name, gender, year, and frequency.
+ */
 public class NameRecord {
+
     private String name;
     private String gender;
     private int year;
     private int frequency;
 
+    /**
+     * Creates a NameRecord.
+     *
+     * @param name the baby name
+     * @param gender the gender (M or F)
+     * @param year the year
+     * @param frequency how often the name occurred
+     */
     public NameRecord(String name, String gender, int year, int frequency) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Invalid name");
@@ -23,18 +35,30 @@ public class NameRecord {
         this.frequency = frequency;
     }
 
+    /**
+     * Gets the name.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Gets the gender.
+     */
     public String getGender() {
         return this.gender;
     }
 
+    /**
+     * Gets the year.
+     */
     public int getYear() {
         return this.year;
     }
 
+    /**
+     * Gets the frequency.
+     */
     public int getFrequency() {
         return this.frequency;
     }
@@ -46,6 +70,9 @@ public class NameRecord {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (!(obj instanceof NameRecord)) {
             return false;
         }
@@ -57,8 +84,6 @@ public class NameRecord {
 
     @Override
     public int hashCode() {
-        return this.name.toLowerCase().hashCode()
-                + this.gender.toLowerCase().hashCode()
-                + this.year;
+        return (this.name.toLowerCase() + this.gender.toLowerCase() + this.year).hashCode();
     }
 }
