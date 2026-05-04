@@ -140,12 +140,23 @@ public class BabyNameController {
             Integer freq = frequencyField.getText().isBlank() ? null : Integer.parseInt(frequencyField.getText());
 
             listView.getItems().clear();
+
             for (NameRecord record : manager.search(name, gender, year, freq)) {
                 listView.getItems().add(record.toString());
             }
+
         } catch (NumberFormatException e) {
             showError("Year and Frequency must be numbers");
         }
+    }
+
+    @FXML
+    private void handleClear() {
+        nameField.clear();
+        yearField.clear();
+        frequencyField.clear();
+        genderGroup.selectToggle(null);
+        updateList();
     }
 
     private void updateList() {

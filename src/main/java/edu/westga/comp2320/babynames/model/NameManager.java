@@ -60,10 +60,22 @@ public class NameManager {
      */
     public List<NameRecord> search(String name, String gender, Integer year, Integer frequency) {
         return this.records.stream()
-                .filter(r -> name == null || name.isBlank() || r.getName().equalsIgnoreCase(name))
-                .filter(r -> gender == null || gender.isBlank() || r.getGender().equalsIgnoreCase(gender))
+
+                // 🔥 partial name match (important fix)
+                .filter(r -> name == null || name.isBlank()
+                        || r.getName().toLowerCase().contains(name.toLowerCase()))
+
+                // gender match
+                .filter(r -> gender == null || gender.isBlank()
+                        || r.getGender().equalsIgnoreCase(gender))
+
+                // year match
                 .filter(r -> year == null || r.getYear() == year)
+
+                // frequency match
                 .filter(r -> frequency == null || r.getFrequency() == frequency)
+
+                // keep sorting
                 .sorted(getComparator())
                 .collect(Collectors.toList());
     }
