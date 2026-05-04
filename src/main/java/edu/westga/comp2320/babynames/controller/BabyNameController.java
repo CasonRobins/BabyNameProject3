@@ -5,6 +5,10 @@ import edu.westga.comp2320.babynames.model.NameRecord;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class BabyNameController {
 
     @FXML private TextField nameField;
@@ -17,6 +21,7 @@ public class BabyNameController {
     @FXML private ListView<String> listView;
 
     @FXML private ToggleGroup genderGroup;
+    @FXML private Button deleteButton;
 
     private NameManager manager = new NameManager();
 
@@ -26,22 +31,81 @@ public class BabyNameController {
         maleRadio.setToggleGroup(genderGroup);
         femaleRadio.setToggleGroup(genderGroup);
 
+        deleteButton.setDisable(true);
+
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            deleteButton.setDisable(newVal == null);
+        });
+
+        loadDataFile();
         updateList();
+    }
+
+    private void loadDataFile() {
+        try {
+            InputStream inputStream = getClass().getResourceAsStream("/data.csv");
+
+            if (inputStream == null) {
+                showError("Could not find data.csv");
+                return;
+            }
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+
+                if (parts.length == 4) {
+                    String name = parts[0].trim();
+                    String gender = parts[1].trim();
+                    int year = Integer.parseInt(parts[2].trim());
+                    int frequency = Integer.parseInt(parts[3].trim());
+
+                    manager.addRecord(new NameRecord(name, gender, year, frequency));
+                }
+            }
+
+            reader.close();
+        } catch (Exception e) {
+            showError("Could not load data file");
+        }
     }
 
     @FXML
     private void handleAdd() {
-        try {
-            String name = nameField.getText();
-            String gender = maleRadio.isSelected() ? "M" : "F";
-            int year = Integer.parseInt(yearField.getText());
-            int freq = Integer.parseInt(frequencyField.getText());
+        String name = nameField.getText();
 
-            manager.addRecord(new NameRecord(name, gender, year, freq));
-            updateList();
-        } catch (Exception e) {
-            showError("Invalid input");
+        if (name == null || name.isBlank()) {
+            showError("Name is required");
+            return;
         }
+
+        if (!maleRadio.isSelected() && !femaleRadio.isSelected()) {
+            showError("Select a gender");
+            return;
+        }
+
+        String gender = maleRadio.isSelected() ? "M" : "F";
+
+        int year;
+        int freq;
+
+        try {
+            year = Integer.parseInt(yearField.getText());
+            freq = Integer.parseInt(frequencyField.getText());
+        } catch (NumberFormatException e) {
+            showError("Year and Frequency must be numbers");
+            return;
+        }
+
+        if (year < 0 || freq < 0) {
+            showError("Year and Frequency must be positive");
+            return;
+        }
+
+        manager.addRecord(new NameRecord(name, gender, year, freq));
+        updateList();
     }
 
     @FXML
@@ -64,23 +128,30 @@ public class BabyNameController {
     private void handleSearch() {
         try {
             String name = nameField.getText();
-            String gender = maleRadio.isSelected() ? "M" : "F";
+            String gender = null;
+
+            if (maleRadio.isSelected()) {
+                gender = "M";
+            } else if (femaleRadio.isSelected()) {
+                gender = "F";
+            }
+
             Integer year = yearField.getText().isBlank() ? null : Integer.parseInt(yearField.getText());
             Integer freq = frequencyField.getText().isBlank() ? null : Integer.parseInt(frequencyField.getText());
 
             listView.getItems().clear();
-            for (NameRecord r : manager.search(name, gender, year, freq)) {
-                listView.getItems().add(r.toString());
+            for (NameRecord record : manager.search(name, gender, year, freq)) {
+                listView.getItems().add(record.toString());
             }
-        } catch (Exception e) {
-            showError("Invalid search input");
+        } catch (NumberFormatException e) {
+            showError("Year and Frequency must be numbers");
         }
     }
 
     private void updateList() {
         listView.getItems().clear();
-        for (NameRecord r : manager.getAllRecords()) {
-            listView.getItems().add(r.toString());
+        for (NameRecord record : manager.getAllRecords()) {
+            listView.getItems().add(record.toString());
         }
     }
 

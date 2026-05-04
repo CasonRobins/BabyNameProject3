@@ -30,7 +30,8 @@
     </HBox>
 
     <HBox spacing="10">
-        <Button text="Delete" onAction="#handleDelete"/>
+        <!-- 🔥 THIS LINE FIXES YOUR CRASH -->
+        <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete"/>
         <Button text="Delete All" onAction="#handleDeleteAll"/>
     </HBox>
 
