@@ -15,6 +15,8 @@ public class BabyNameController {
     @FXML private TextField yearField;
     @FXML private TextField frequencyField;
 
+    @FXML private Label yearErrorLabel;
+
     @FXML private RadioButton maleRadio;
     @FXML private RadioButton femaleRadio;
 
@@ -40,6 +42,8 @@ public class BabyNameController {
         loadDataFile();
         updateList();
     }
+
+    // ---------------- FILE LOADING ----------------
 
     private void loadDataFile() {
         try {
@@ -67,10 +71,33 @@ public class BabyNameController {
             }
 
             reader.close();
+
         } catch (Exception e) {
             showError("Could not load data file");
         }
     }
+
+    // ---------------- VALIDATION ----------------
+
+    private Integer getValidYear() {
+        String text = yearField.getText();
+
+        if (text == null || text.isBlank()) {
+            yearErrorLabel.setText("");
+            return null;
+        }
+
+        try {
+            int year = Integer.parseInt(text);
+            yearErrorLabel.setText("");
+            return year;
+        } catch (NumberFormatException e) {
+            yearErrorLabel.setText("Enter a valid Year");
+            return null;
+        }
+    }
+
+    // ---------------- BUTTONS ----------------
 
     @FXML
     private void handleAdd() {
@@ -88,14 +115,15 @@ public class BabyNameController {
 
         String gender = maleRadio.isSelected() ? "M" : "F";
 
-        int year;
+        Integer year = getValidYear();
+        if (year == null) return;
+
         int freq;
 
         try {
-            year = Integer.parseInt(yearField.getText());
             freq = Integer.parseInt(frequencyField.getText());
         } catch (NumberFormatException e) {
-            showError("Year and Frequency must be numbers");
+            showError("Frequency must be a number");
             return;
         }
 
@@ -111,6 +139,7 @@ public class BabyNameController {
     @FXML
     private void handleDelete() {
         int index = listView.getSelectionModel().getSelectedIndex();
+
         if (index >= 0) {
             NameRecord record = manager.getAllRecords().get(index);
             manager.deleteRecord(record);
@@ -128,25 +157,24 @@ public class BabyNameController {
     private void handleSearch() {
         try {
             String name = nameField.getText();
+
             String gender = null;
+            if (maleRadio.isSelected()) gender = "M";
+            else if (femaleRadio.isSelected()) gender = "F";
 
-            if (maleRadio.isSelected()) {
-                gender = "M";
-            } else if (femaleRadio.isSelected()) {
-                gender = "F";
-            }
-
-            Integer year = yearField.getText().isBlank() ? null : Integer.parseInt(yearField.getText());
-            Integer freq = frequencyField.getText().isBlank() ? null : Integer.parseInt(frequencyField.getText());
+            Integer year = getValidYear();
+            Integer freq = frequencyField.getText().isBlank()
+                    ? null
+                    : Integer.parseInt(frequencyField.getText());
 
             listView.getItems().clear();
 
-            for (NameRecord record : manager.search(name, gender, year, freq)) {
-                listView.getItems().add(record.toString());
+            for (NameRecord r : manager.search(name, gender, year, freq)) {
+                listView.getItems().add(r.toString());
             }
 
         } catch (NumberFormatException e) {
-            showError("Year and Frequency must be numbers");
+            showError("Invalid number input");
         }
     }
 
@@ -156,13 +184,62 @@ public class BabyNameController {
         yearField.clear();
         frequencyField.clear();
         genderGroup.selectToggle(null);
+        yearErrorLabel.setText("");
         updateList();
     }
 
+    @FXML
+    private void handleTopNames() {
+        try {
+            Integer year = getValidYear();
+            if (year == null) return;
+
+            listView.getItems().clear();
+
+            listView.getItems().add("Top Female Names:");
+            for (NameRecord r : manager.getTop3ByGenderAndYear("F", year)) {
+                listView.getItems().add(r.toString());
+            }
+
+            listView.getItems().add("");
+
+            listView.getItems().add("Top Male Names:");
+            for (NameRecord r : manager.getTop3ByGenderAndYear("M", year)) {
+                listView.getItems().add(r.toString());
+            }
+
+        } catch (Exception e) {
+            showError("Year must be valid");
+        }
+    }
+
+    // ---------------- MENU METHODS (FIXED) ----------------
+
+    @FXML
+    private void handleOpen() {
+        showError("Open not required for submission demo (or implement later)");
+    }
+
+    @FXML
+    private void handleSave() {
+        showError("Save not required for submission demo (or implement later)");
+    }
+
+    @FXML
+    private void handleAbout() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("About");
+        alert.setHeaderText("Baby Name Statistics");
+        alert.setContentText("Created by Cason Robins");
+        alert.showAndWait();
+    }
+
+    // ---------------- HELPERS ----------------
+
     private void updateList() {
         listView.getItems().clear();
-        for (NameRecord record : manager.getAllRecords()) {
-            listView.getItems().add(record.toString());
+        for (NameRecord r : manager.getAllRecords()) {
+            listView.getItems().add(r.toString());
         }
     }
 

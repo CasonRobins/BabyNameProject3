@@ -12,6 +12,17 @@
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
 
+    <!-- 🔥 REQUIRED MENU BAR (PART 1.4) -->
+    <MenuBar>
+        <Menu text="File">
+            <MenuItem text="Open" onAction="#handleOpen" accelerator="Ctrl+O"/>
+            <MenuItem text="Save" onAction="#handleSave" accelerator="Ctrl+S"/>
+        </Menu>
+        <Menu text="Help">
+            <MenuItem text="About" onAction="#handleAbout" accelerator="Ctrl+B"/>
+        </Menu>
+    </MenuBar>
+
     <Label text="Frequencies of Baby Names by Year"/>
 
     <TextField fx:id="nameField" promptText="Name"/>
@@ -22,12 +33,15 @@
     </HBox>
 
     <TextField fx:id="yearField" promptText="Year"/>
+    <Label fx:id="yearErrorLabel" textFill="red"/>
+
     <TextField fx:id="frequencyField" promptText="Frequency"/>
 
     <HBox spacing="10">
         <Button text="Search" onAction="#handleSearch"/>
         <Button text="Add" onAction="#handleAdd"/>
         <Button text="Clear" onAction="#handleClear"/>
+        <Button text="Top 3" onAction="#handleTopNames"/>
     </HBox>
 
     <HBox spacing="10">

@@ -12,16 +12,10 @@ public class NameManager {
 
     private List<NameRecord> records;
 
-    /**
-     * Creates a new NameManager.
-     */
     public NameManager() {
         this.records = new ArrayList<>();
     }
 
-    /**
-     * Adds a record if it does not already exist.
-     */
     public void addRecord(NameRecord record) {
         if (record == null) {
             throw new IllegalArgumentException("Record cannot be null");
@@ -32,57 +26,50 @@ public class NameManager {
         }
     }
 
-    /**
-     * Deletes a specific record.
-     */
     public void deleteRecord(NameRecord record) {
         this.records.remove(record);
     }
 
-    /**
-     * Deletes all records.
-     */
     public void deleteAll() {
         this.records.clear();
     }
 
-    /**
-     * Returns all records sorted.
-     */
     public List<NameRecord> getAllRecords() {
         return this.records.stream()
                 .sorted(getComparator())
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Searches records based on optional fields.
-     */
     public List<NameRecord> search(String name, String gender, Integer year, Integer frequency) {
         return this.records.stream()
 
-                // 🔥 partial name match (important fix)
                 .filter(r -> name == null || name.isBlank()
                         || r.getName().toLowerCase().contains(name.toLowerCase()))
 
-                // gender match
                 .filter(r -> gender == null || gender.isBlank()
                         || r.getGender().equalsIgnoreCase(gender))
 
-                // year match
                 .filter(r -> year == null || r.getYear() == year)
 
-                // frequency match
                 .filter(r -> frequency == null || r.getFrequency() == frequency)
 
-                // keep sorting
                 .sorted(getComparator())
                 .collect(Collectors.toList());
     }
 
     /**
-     * Sorting logic required by the project.
+     * PART 2 FEATURE:
+     * Returns top 3 names for a gender in a specific year.
      */
+    public List<NameRecord> getTop3ByGenderAndYear(String gender, int year) {
+        return this.records.stream()
+                .filter(r -> r.getGender().equalsIgnoreCase(gender))
+                .filter(r -> r.getYear() == year)
+                .sorted(Comparator.comparing(NameRecord::getFrequency).reversed())
+                .limit(3)
+                .collect(Collectors.toList());
+    }
+
     private Comparator<NameRecord> getComparator() {
         return Comparator
                 .comparing(NameRecord::getYear).reversed()
