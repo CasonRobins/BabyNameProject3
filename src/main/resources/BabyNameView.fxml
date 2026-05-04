@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="edu.westga.comp2320.babynames.controller.BabyNameController">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <Label text="Frequencies of Baby Names by Year"/>
+
+    <TextField fx:id="nameField" promptText="Name"/>
+
+    <HBox spacing="10">
+        <RadioButton fx:id="maleRadio" text="M"/>
+        <RadioButton fx:id="femaleRadio" text="F"/>
+    </HBox>
+
+    <TextField fx:id="yearField" promptText="Year"/>
+    <TextField fx:id="frequencyField" promptText="Frequency"/>
+
+    <HBox spacing="10">
+        <Button text="Search" onAction="#handleSearch"/>
+        <Button text="Add" onAction="#handleAdd"/>
+    </HBox>
+
+    <HBox spacing="10">
+        <Button text="Delete" onAction="#handleDelete"/>
+        <Button text="Delete All" onAction="#handleDeleteAll"/>
+    </HBox>
+
+    <ListView fx:id="listView" prefHeight="200"/>
+
+</VBox>

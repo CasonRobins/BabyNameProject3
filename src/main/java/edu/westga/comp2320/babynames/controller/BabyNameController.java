@@ -16,10 +16,16 @@ public class BabyNameController {
 
     @FXML private ListView<String> listView;
 
+    @FXML private ToggleGroup genderGroup;
+
     private NameManager manager = new NameManager();
 
     @FXML
     public void initialize() {
+        genderGroup = new ToggleGroup();
+        maleRadio.setToggleGroup(genderGroup);
+        femaleRadio.setToggleGroup(genderGroup);
+
         updateList();
     }
 
