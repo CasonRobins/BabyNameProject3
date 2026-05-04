@@ -5,52 +5,69 @@ import edu.westga.comp2320.babynames.model.NameRecord;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.Scanner;
 
+/**
+ * Controller for the Baby Name Statistics application.
+ * Handles loading data, user interaction, and UI updates.
+ */
 public class BabyNameController {
 
-    @FXML private TextField nameField;
-    @FXML private TextField yearField;
-    @FXML private TextField frequencyField;
+    @FXML
+    private TextField nameField;
+    @FXML
+    private TextField yearField;
+    @FXML
+    private TextField frequencyField;
 
-    @FXML private Label yearErrorLabel;
+    @FXML
+    private Label yearErrorLabel;
 
-    @FXML private RadioButton maleRadio;
-    @FXML private RadioButton femaleRadio;
+    @FXML
+    private RadioButton maleRadio;
+    @FXML
+    private RadioButton femaleRadio;
 
-    @FXML private ListView<String> listView;
+    @FXML
+    private ListView<String> listView;
 
-    @FXML private ToggleGroup genderGroup;
-    @FXML private Button deleteButton;
+    @FXML
+    private ToggleGroup genderGroup;
+    @FXML
+    private Button deleteButton;
 
     private NameManager manager = new NameManager();
 
+    /**
+     * Initializes the UI and loads data from file.
+     */
     @FXML
     public void initialize() {
-        genderGroup = new ToggleGroup();
-        maleRadio.setToggleGroup(genderGroup);
-        femaleRadio.setToggleGroup(genderGroup);
+        this.genderGroup = new ToggleGroup();
 
-        deleteButton.setDisable(true);
+        this.maleRadio.setToggleGroup(this.genderGroup);
+        this.femaleRadio.setToggleGroup(this.genderGroup);
 
-        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            deleteButton.setDisable(newVal == null);
-        });
+        this.deleteButton.setDisable(true);
 
-        loadDataFile();
-        updateList();
+        this.listView.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldVal, newVal) ->
+                        this.deleteButton.setDisable(newVal == null));
+
+        this.loadDataFile();
+        this.updateList();
     }
 
-    // ---------------- FILE LOADING ----------------
-
+    /**
+     * Loads initial data from CSV file.
+     */
     private void loadDataFile() {
         try {
-            InputStream inputStream = getClass().getResourceAsStream("/data.csv");
+            InputStream inputStream = this.getClass().getResourceAsStream("/data.csv");
 
             if (inputStream == null) {
-                showError("Could not find data.csv");
+                this.showError("Could not find data.csv");
                 return;
             }
 
@@ -61,170 +78,239 @@ public class BabyNameController {
                 String[] parts = line.split(",");
 
                 if (parts.length == 4) {
-                    String name = parts[0].trim();
-                    String gender = parts[1].trim();
-                    int year = Integer.parseInt(parts[2].trim());
-                    int frequency = Integer.parseInt(parts[3].trim());
-
-                    manager.addRecord(new NameRecord(name, gender, year, frequency));
+                    this.manager.addRecord(new NameRecord(
+                            parts[0].trim(),
+                            parts[1].trim(),
+                            Integer.parseInt(parts[2].trim()),
+                            Integer.parseInt(parts[3].trim())
+                    ));
                 }
             }
 
             reader.close();
 
         } catch (Exception e) {
-            showError("Could not load data file");
+            this.showError("Could not load data file");
         }
     }
 
-    // ---------------- VALIDATION ----------------
-
+    /**
+     * Validates and returns year input.
+     */
     private Integer getValidYear() {
-        String text = yearField.getText();
+        String text = this.yearField.getText();
 
         if (text == null || text.isBlank()) {
-            yearErrorLabel.setText("");
+            this.yearErrorLabel.setText("");
             return null;
         }
 
         try {
             int year = Integer.parseInt(text);
-            yearErrorLabel.setText("");
+            this.yearErrorLabel.setText("");
             return year;
         } catch (NumberFormatException e) {
-            yearErrorLabel.setText("Enter a valid Year");
+            this.yearErrorLabel.setText("Enter a valid Year");
             return null;
         }
     }
 
-    // ---------------- BUTTONS ----------------
-
+    /**
+     * Adds a new record.
+     */
     @FXML
     private void handleAdd() {
-        String name = nameField.getText();
+        String name = this.nameField.getText();
 
         if (name == null || name.isBlank()) {
-            showError("Name is required");
+            this.showError("Name is required");
             return;
         }
 
-        if (!maleRadio.isSelected() && !femaleRadio.isSelected()) {
-            showError("Select a gender");
+        if (!this.maleRadio.isSelected() && !this.femaleRadio.isSelected()) {
+            this.showError("Select a gender");
             return;
         }
 
-        String gender = maleRadio.isSelected() ? "M" : "F";
+        String gender = this.maleRadio.isSelected() ? "M" : "F";
 
-        Integer year = getValidYear();
-        if (year == null) return;
+        Integer year = this.getValidYear();
+        if (year == null) {
+            return;
+        }
 
         int freq;
 
         try {
-            freq = Integer.parseInt(frequencyField.getText());
+            freq = Integer.parseInt(this.frequencyField.getText());
         } catch (NumberFormatException e) {
-            showError("Frequency must be a number");
+            this.showError("Frequency must be a number");
             return;
         }
 
-        if (year < 0 || freq < 0) {
-            showError("Year and Frequency must be positive");
-            return;
-        }
-
-        manager.addRecord(new NameRecord(name, gender, year, freq));
-        updateList();
+        this.manager.addRecord(new NameRecord(name, gender, year, freq));
+        this.updateList();
     }
 
+    /**
+     * Deletes selected record.
+     */
     @FXML
     private void handleDelete() {
-        int index = listView.getSelectionModel().getSelectedIndex();
+        int index = this.listView.getSelectionModel().getSelectedIndex();
 
         if (index >= 0) {
-            NameRecord record = manager.getAllRecords().get(index);
-            manager.deleteRecord(record);
-            updateList();
+            NameRecord record = this.manager.getAllRecords().get(index);
+            this.manager.deleteRecord(record);
+            this.updateList();
         }
     }
 
+    /**
+     * Deletes all records.
+     */
     @FXML
     private void handleDeleteAll() {
-        manager.deleteAll();
-        updateList();
+        this.manager.deleteAll();
+        this.updateList();
     }
 
+    /**
+     * Searches records.
+     */
     @FXML
     private void handleSearch() {
         try {
-            String name = nameField.getText();
+            String name = this.nameField.getText();
 
             String gender = null;
-            if (maleRadio.isSelected()) gender = "M";
-            else if (femaleRadio.isSelected()) gender = "F";
+            if (this.maleRadio.isSelected()) {
+                gender = "M";
+            } else if (this.femaleRadio.isSelected()) {
+                gender = "F";
+            }
 
-            Integer year = getValidYear();
-            Integer freq = frequencyField.getText().isBlank()
+            Integer year = this.getValidYear();
+
+            Integer freq = this.frequencyField.getText().isBlank()
                     ? null
-                    : Integer.parseInt(frequencyField.getText());
+                    : Integer.parseInt(this.frequencyField.getText());
 
-            listView.getItems().clear();
+            this.listView.getItems().clear();
 
-            for (NameRecord r : manager.search(name, gender, year, freq)) {
-                listView.getItems().add(r.toString());
-            }
-
-        } catch (NumberFormatException e) {
-            showError("Invalid number input");
-        }
-    }
-
-    @FXML
-    private void handleClear() {
-        nameField.clear();
-        yearField.clear();
-        frequencyField.clear();
-        genderGroup.selectToggle(null);
-        yearErrorLabel.setText("");
-        updateList();
-    }
-
-    @FXML
-    private void handleTopNames() {
-        try {
-            Integer year = getValidYear();
-            if (year == null) return;
-
-            listView.getItems().clear();
-
-            listView.getItems().add("Top Female Names:");
-            for (NameRecord r : manager.getTop3ByGenderAndYear("F", year)) {
-                listView.getItems().add(r.toString());
-            }
-
-            listView.getItems().add("");
-
-            listView.getItems().add("Top Male Names:");
-            for (NameRecord r : manager.getTop3ByGenderAndYear("M", year)) {
-                listView.getItems().add(r.toString());
+            for (NameRecord r : this.manager.search(name, gender, year, freq)) {
+                this.listView.getItems().add(r.toString());
             }
 
         } catch (Exception e) {
-            showError("Year must be valid");
+            this.showError("Invalid input");
         }
     }
 
-    // ---------------- MENU METHODS (FIXED) ----------------
-
+    /**
+     * Clears all input fields.
+     */
     @FXML
-    private void handleOpen() {
-        showError("Open not required for submission demo (or implement later)");
+    private void handleClear() {
+        this.nameField.clear();
+        this.yearField.clear();
+        this.frequencyField.clear();
+        this.genderGroup.selectToggle(null);
+        this.yearErrorLabel.setText("");
+        this.updateList();
     }
 
+    /**
+     * Shows top 3 male and female names.
+     */
+    @FXML
+    private void handleTopNames() {
+        Integer year = this.getValidYear();
+
+        if (year == null) {
+            return;
+        }
+
+        this.listView.getItems().clear();
+
+        this.listView.getItems().add("Top Female Names:");
+        for (NameRecord r : this.manager.getTop3ByGenderAndYear("F", year)) {
+            this.listView.getItems().add(r.toString());
+        }
+
+        this.listView.getItems().add("");
+
+        this.listView.getItems().add("Top Male Names:");
+        for (NameRecord r : this.manager.getTop3ByGenderAndYear("M", year)) {
+            this.listView.getItems().add(r.toString());
+        }
+    }
+
+    /**
+     * Saves records to file.
+     */
     @FXML
     private void handleSave() {
-        showError("Save not required for submission demo (or implement later)");
+        try {
+            File file = new File("data.csv");
+            FileWriter writer = new FileWriter(file);
+
+            for (NameRecord r : this.manager.getAllRecords()) {
+                writer.write(r.getName() + "," +
+                        r.getGender() + "," +
+                        r.getYear() + "," +
+                        r.getFrequency() + "\n");
+            }
+
+            writer.close();
+            this.showError("Saved successfully");
+
+        } catch (Exception e) {
+            this.showError("Error saving file");
+        }
     }
 
+    /**
+     * Loads records from file.
+     */
+    @FXML
+    private void handleOpen() {
+        try {
+            File file = new File("data.csv");
+
+            if (!file.exists()) {
+                this.showError("No saved file found");
+                return;
+            }
+
+            this.manager.deleteAll();
+
+            Scanner scanner = new Scanner(file);
+
+            while (scanner.hasNextLine()) {
+                String[] parts = scanner.nextLine().split(",");
+
+                if (parts.length == 4) {
+                    this.manager.addRecord(new NameRecord(
+                            parts[0],
+                            parts[1],
+                            Integer.parseInt(parts[2]),
+                            Integer.parseInt(parts[3])
+                    ));
+                }
+            }
+
+            scanner.close();
+            this.updateList();
+
+        } catch (Exception e) {
+            this.showError("Error loading file");
+        }
+    }
+
+    /**
+     * Shows about dialog.
+     */
     @FXML
     private void handleAbout() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -234,15 +320,20 @@ public class BabyNameController {
         alert.showAndWait();
     }
 
-    // ---------------- HELPERS ----------------
-
+    /**
+     * Updates list view.
+     */
     private void updateList() {
-        listView.getItems().clear();
-        for (NameRecord r : manager.getAllRecords()) {
-            listView.getItems().add(r.toString());
+        this.listView.getItems().clear();
+
+        for (NameRecord r : this.manager.getAllRecords()) {
+            this.listView.getItems().add(r.toString());
         }
     }
 
+    /**
+     * Shows error message.
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
